@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LogbookTracker MagangHub</title>
+
+  <!-- PWA Meta & Manifest -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="description" content="Aplikasi web tracker aktivitas harian, pengingat terjadwal, generator draf, dan catatan progress logbook magang untuk peserta MagangHub." />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="LogbookMagang" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --success: #10b981;
+      --success-hover: #059669;
+      --success-soft: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-hover: #d97706;
+      --warning-soft: #fffbeb;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --danger-soft: #fef2f2;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      color: var(--text);
+    }
+
+    button, input, select, textarea {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Minimum 44px touch targets */
+    button, .btn, input[type="date"], input[type="time"], select {
+      min-height: 44px;
+    }
+
+    button, .btn {
+      min-width: 44px;
+      cursor: pointer;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 16px;
+      transition: background-color 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: #ffffff;
+    }
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-warning {
+      background-color: var(--warning);
+      color: #ffffff;
+    }
+    .btn-warning:hover {
+      background-color: var(--warning-hover);
+    }
+
+    .btn-outline {
+      background-color: #ffffff;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .btn-outline:hover {
+      background-color: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .btn-ghost {
+      background-color: transparent;
+      color: var(--text-muted);
+      padding: 0 10px;
+    }
+    .btn-ghost:hover {
+      background-color: #f1f5f9;
+      color: var(--text);
+    }
+
+    .btn-danger-ghost {
+      background-color: transparent;
+      color: var(--danger);
+      padding: 0 10px;
+    }
+    .btn-danger-ghost:hover {
+      background-color: var(--danger-soft);
+    }
+
+    /* Layout Container */
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 20px 16px 64px;
+    }
+
+    /* Header */
+    .app-header {
+      background-color: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .header-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background-color: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background-color: var(--success-soft);
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .status-pill.offline {
+      background-color: var(--warning-soft);
+      color: #92400e;
+      border-color: #fde68a;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    /* Reminder Alert Banner */
+    .reminder-banner {
+      display: none;
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border: 1.5px solid var(--warning);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-md);
+    }
+
+    .reminder-banner.active {
+      display: flex;
+    }
+
+    .reminder-banner-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .reminder-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background-color: var(--warning);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .reminder-banner-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #92400e;
+      margin-bottom: 2px;
+    }
+
+    .reminder-banner-desc {
+      font-size: 0.88rem;
+      color: #78350f;
+      margin: 0;
+    }
+
+    .reminder-banner-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Progress Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 720px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-box {
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .stat-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Progress Bar */
+    .progress-wrapper {
+      margin-top: 8px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      background-color: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
+      border-radius: 999px;
+      transition: width 0.35s ease;
+      width: 0%;
+    }
+
+    /* Settings Accordion / Inline Row */
+    .settings-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+      padding-top: 14px;
+      margin-top: 14px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .input-control {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      font-size: 0.92rem;
+      color: var(--text);
+      background-color: #ffffff;
+      min-height: 44px;
+      transition: border-color 0.15s ease;
+    }
+
+    .input-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea.input-control {
+      padding: 12px;
+      min-height: 88px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    /* Main Workspace Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Day Status Banner inside Quick Notes */
+    .day-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      border: 1.5px solid var(--border);
+      background-color: var(--bg);
+    }
+
+    .day-status-bar.submitted {
+      background-color: var(--success-soft);
+      border-color: #a7f3d0;
+    }
+
+    .day-status-bar.pending {
+      background-color: var(--warning-soft);
+      border-color: #fde68a;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .badge-submitted {
+      background-color: var(--success);
+      color: #ffffff;
+    }
+
+    .badge-pending {
+      background-color: var(--warning);
+      color: #ffffff;
+    }
+
+    /* Quick Note Form */
+    .quick-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .quick-form-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .quick-form-row select {
+      flex: 1;
+      min-width: 170px;
+    }
+
+    .quick-form-row button {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    /* Notes List */
+    .notes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .note-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      background-color: #ffffff;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      transition: border-color 0.15s ease;
+    }
+
+    .note-item:hover {
+      border-color: #cbd5e1;
+    }
+
+    .note-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .note-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+
+    .cat-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .cat-kerja {
+      background-color: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .cat-kendala {
+      background-color: var(--warning-soft);
+      color: #b45309;
+    }
+
+    .cat-belajar {
+      background-color: var(--success-soft);
+      color: #047857;
+    }
+
+    .note-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .note-text {
+      font-size: 0.93rem;
+      color: var(--text);
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .note-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 28px 16px;
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Draft Generator Box */
+    .draft-box {
+      background-color: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      font-size: 0.9rem;
+      color: var(--text);
+      white-space: pre-wrap;
+      min-height: 180px;
+      max-height: 320px;
+      overflow-y: auto;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+
+    .draft-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .draft-controls select {
+      flex: 1;
+    }
+
+    /* History Section */
+    .history-toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .history-toolbar input {
+      flex: 2;
+      min-width: 200px;
+    }
+
+    .history-toolbar select {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .history-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      background-color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .history-card.active-date {
+      border-color: var(--primary);
+      background-color: var(--primary-soft);
+    }
+
+    .history-info {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .history-date-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+
+    .history-date {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .history-preview {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Backup Footer Toolbar */
+    .backup-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .backup-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: var(--text);
+      color: #ffffff;
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+      z-index: 100;
+      opacity: 0;
+      transform: translateY(16px);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Install Banner for iOS / PWA */
+    .pwa-install-hint {
+      display: none;
+      background-color: var(--primary-soft);
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .pwa-install-hint.show {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="m9 15 2 2 4-4"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title" id="ui-app-title"></h1>
+          <p class="brand-subtitle" id="ui-app-subtitle"></p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <span class="status-pill" id="network-status-pill">
+          <span class="dot"></span>
+          <span id="ui-network-status"></span>
+        </span>
+        <button type="button" class="btn-primary" id="btn-install-pwa" style="display: none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span id="ui-btn-install"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- iOS Install Hint -->
+    <div class="pwa-install-hint" id="ios-install-hint">
+      <span id="ui-ios-install-text"></span>
+      <button type="button" class="btn-ghost" id="btn-close-ios-hint" aria-label="Tutup">✕</button>
+    </div>
+
+    <!-- Visual Daily Reminder Banner -->
+    <section class="reminder-banner" id="reminder-banner" role="alert">
+      <div class="reminder-banner-content">
+        <div class="reminder-icon-box" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="reminder-banner-title" id="ui-reminder-banner-title"></div>
+          <p class="reminder-banner-desc" id="ui-reminder-banner-desc"></p>
+        </div>
+      </div>
+      <div class="reminder-banner-actions">
+        <button type="button" class="btn-warning" id="btn-banner-jump"></button>
+        <button type="button" class="btn-outline" id="btn-banner-dismiss"></button>
+      </div>
+    </section>
+
+    <!-- Long-Term Progress Tracker Card -->
+    <section class="card" aria-labelledby="ui-progress-title">
+      <div class="card-header">
+        <h2 class="card-title" id="ui-progress-title"></h2>
+        <button type="button" class="btn-outline" id="btn-toggle-settings"></button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label" id="ui-stat-days-label"></div>
+          <div class="stat-value" id="stat-days-value">0 Hari</div>
+          <div class="stat-sub" id="stat-days-sub"></div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label" id="ui-stat-streak-label"></div>
+          <div class="stat-value" id="stat-streak-value">0 Hari</div>
+          <div class="stat-sub" id="ui-stat-streak-sub"></div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label" id="ui-stat-submitted-label"></div>
+          <div class="stat-value" id="stat-submitted-value">0 Logbook</div>
+          <div class="stat-sub" id="ui-stat-submitted-sub"></div>
+        </div>
+      </div>
+
+      <div class="progress-wrapper">
+        <div class="progress-meta">
+          <span id="ui-progress-bar-label"></span>
+          <span id="progress-percent-text">0%</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progress-bar-role">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Collapsible Settings: Internship Dates & Daily Reminder -->
+      <div class="settings-bar" id="settings-panel" style="display: none;">
+        <div class="form-group">
+          <label for="input-start-date" id="ui-label-start-date"></label>
+          <input type="date" id="input-start-date" class="input-control" />
+        </div>
+        <div class="form-group">
+          <label for="input-end-date" id="ui-label-end-date"></label>
+          <input type="date" id="input-end-date" class="input-control" />
+        </div>
+        <div class="form-group">
+          <label for="input-reminder-time" id="ui-label-reminder-time"></label>
+          <input type="time" id="input-reminder-time" class="input-control" />
+        </div>
+        <button type="button" class="btn-primary" id="btn-save-settings"></button>
+        <button type="button" class="btn-outline" id="btn-request-notif"></button>
+        <button type="button" class="btn-ghost" id="btn-test-notif"></button>
+      </div>
+    </section>
+
+    <!-- Main 2-Column Workspace: Quick Notes & Draft Generator -->
+    <div class="main-grid">
+      <!-- Left Column: Quick Notes & Logbook Status -->
+      <section class="card" id="quick-note-section" aria-labelledby="ui-notes-title">
+        <div class="card-header">
+          <h2 class="card-title" id="ui-notes-title"></h2>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="date" id="active-date-picker" class="input-control" aria-label="Pilih tanggal logbook" />
+            <button type="button" class="btn-outline" id="btn-today"></button>
+          </div>
+        </div>
+
+        <!-- Logbook Status Bar -->
+        <div class="day-status-bar pending" id="day-status-bar">
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);" id="active-date-readable"></div>
+            <div style="margin-top: 4px;">
+              <span class="badge-status badge-pending" id="day-status-badge"></span>
+            </div>
+          </div>
+          <button type="button" class="btn-success" id="btn-toggle-status"></button>
+        </div>
+
+        <!-- Quick Note Form -->
+        <form class="quick-form" id="quick-note-form">
+          <textarea id="note-input" class="input-control" required></textarea>
+          <div class="quick-form-row">
+            <select id="note-category" class="input-control" aria-label="Kategori catatan">
+              <option value="kerja" id="opt-cat-kerja"></option>
+              <option value="kendala" id="opt-cat-kendala"></option>
+              <option value="belajar" id="opt-cat-belajar"></option>
+            </select>
+            <button type="submit" class="btn-primary" id="btn-add-note"></button>
+          </div>
+        </form>
+
+        <!-- Notes List for Selected Date -->
+        <div class="notes-list" id="notes-list"></div>
+      </section>
+
+      <!-- Right Column: Automatic Logbook Draft Generator -->
+      <section class="card" id="draft-section" aria-labelledby="ui-draft-title">
+        <div class="card-header">
+          <h2 class="card-title" id="ui-draft-title"></h2>
+        </div>
+
+        <div class="draft-controls">
+          <select id="draft-format" class="input-control" aria-label="Format draf logbook">
+            <option value="structured" id="opt-draft-structured"></option>
+            <option value="paragraph" id="opt-draft-paragraph"></option>
+          </select>
+        </div>
+
+        <div class="draft-box" id="draft-output" role="region" aria-live="polite"></div>
+
+        <button type="button" class="btn-primary" id="btn-copy-draft" style="width: 100%;"></button>
+      </section>
+    </div>
+
+    <!-- History Section -->
+    <section class="card" aria-labelledby="ui-history-title">
+      <div class="card-header">
+        <h2 class="card-title" id="ui-history-title"></h2>
+      </div>
+
+      <div class="history-toolbar">
+        <input type="search" id="history-search" class="input-control" />
+        <select id="history-filter" class="input-control" aria-label="Filter status riwayat">
+          <option value="all" id="opt-filter-all"></option>
+          <option value="pending" id="opt-filter-pending"></option>
+          <option value="submitted" id="opt-filter-submitted"></option>
+        </select>
+      </div>
+
+      <div class="history-list" id="history-list"></div>
+    </section>
+
+    <!-- Data Export & Backup Section -->
+    <section class="card" aria-labelledby="ui-backup-title">
+      <div class="backup-bar">
+        <div>
+          <h2 class="card-title" id="ui-backup-title"></h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin: 4px 0 0;" id="ui-backup-desc"></p>
+        </div>
+        <div class="backup-buttons">
+          <button type="button" class="btn-outline" id="btn-export-csv"></button>
+          <button type="button" class="btn-outline" id="btn-export-json"></button>
+          <button type="button" class="btn-outline" id="btn-import-json"></button>
+          <input type="file" id="import-file-input" accept=".json,application/json" style="display: none;" />
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /**
+     * OBJEK TEKS ANTARMUKA TERPUSAT (UI_TEXT)
+     * Seluruh label, tombol, pesan notifikasi, dan teks antarmuka disimpan di sini agar mudah diubah.
+     */
+    const UI_TEXT = {
+      appTitle: "LogbookTracker MagangHub",
+      appSubtitle: "Catat cepat, susun draf otomatis, pantau progress magang",
+      networkOnline: "Siap Offline (PWA)",
+      networkOffline: "Mode Offline Aktif",
+      btnInstall: "Install Aplikasi",
+      iosInstallHint: "Untuk install di iPhone/iPad: tekan tombol Bagikan (Share) di Safari lalu pilih 'Tambah ke Layar Utama'.",
+
+      // Reminder Banner
+      reminderBannerTitle: "Waktunya Mengisi Logbook MagangHub!",
+      reminderBannerDesc: "Logbook hari ini masih berstatus Belum Dikirim. Salin draf catatanmu lalu kirim ke portal resmi.",
+      btnBannerJump: "Lihat Draf & Kirim",
+      btnBannerDismiss: "Nanti Saja",
+
+      // Long-Term Progress
+      progressTitle: "Progress Magang Jangka Panjang",
+      btnToggleSettings: "Atur Jadwal & Reminder",
+      btnHideSettings: "Tutup Pengaturan",
+      statDaysLabel: "Durasi Magang Berjalan",
+      statStreakLabel: "Streak Pengisian Logbook",
+      statSubmittedLabel: "Total Logbook Terkirim",
+      statStreakSub: "Hari berturut-turut terkirim",
+      statSubmittedSub: "Siap rekap laporan akhir",
+      progressBarLabel: "Persentase Periode Magang",
+
+      // Settings
+      labelStartDate: "Tanggal Mulai Magang",
+      labelEndDate: "Tanggal Selesai Magang",
+      labelReminderTime: "Jam Reminder Harian",
+      btnSaveSettings: "Simpan Pengaturan",
+      btnRequestNotif: "Aktifkan Notifikasi Browser",
+      btnNotifGranted: "Notifikasi Browser Aktif ✓",
+      btnTestNotif: "Tes Notifikasi",
+
+      // Quick Notes & Status
+      notesTitle: "Catatan Aktivitas Harian",
+      btnToday: "Hari Ini",
+      statusSubmitted: "Sudah Dikirim ke Portal ✓",
+      statusPending: "Belum Dikirim",
+      btnMarkSubmitted: "Tandai Logbook Selesai",
+      btnMarkPending: "Ubah ke Belum Dikirim",
+      notePlaceholder: "Tulis poin aktivitas, progres tugas, kendala, atau hal baru yang dipelajari...",
+      catKerja: "Aktivitas Kerja",
+      catKendala: "Kendala & Solusi",
+      catBelajar: "Pembelajaran",
+      btnAddNote: "+ Tambah Catatan",
+      emptyNotes: "Belum ada catatan aktivitas pada tanggal ini. Mulai catat poin pekerjaan pertamamu di atas!",
+      btnEdit: "Edit",
+      btnSaveEdit: "Simpan",
+      btnCancelEdit: "Batal",
+      btnDelete: "Hapus",
+      confirmDeleteNote: "Hapus catatan aktivitas ini?",
+
+      // Draft Generator
+      draftTitle: "Generator Draf Logbook",
+      optDraftStructured: "Format Terstruktur per Kategori",
+      optDraftParagraph: "Format Paragraf Ringkas",
+      emptyDraft: "Belum ada catatan untuk dirangkum pada tanggal ini. Tambahkan poin aktivitas terlebih dahulu.",
+      btnCopyDraft: "Salin Teks Logbook",
+      btnCopiedDraft: "Teks Logbook Tersalin ✓",
+
+      // History
+      historyTitle: "Riwayat Logbook Harian",
+      historySearchPlaceholder: "Cari tanggal atau kata kunci aktivitas...",
+      optFilterAll: "Semua Status",
+      optFilterPending: "Belum Dikirim",
+      optFilterSubmitted: "Sudah Dikirim",
+      emptyHistory: "Belum ada riwayat catatan yang sesuai filter.",
+      btnOpenDate: "Buka & Edit",
+      notesCountSuffix: "catatan",
+
+      // Backup & Export
+      backupTitle: "Cadangkan & Ekspor Data",
+      backupDesc: "Data tersimpan otomatis di browser perangkatmu. Ekspor secara berkala agar riwayat tetap aman.",
+      btnExportCsv: "Ekspor CSV",
+      btnExportJson: "Backup JSON",
+      btnImportJson: "Pulihkan JSON",
+
+      // Toast & Notification Messages
+      toastNoteAdded: "Catatan aktivitas ditambahkan.",
+      toastNoteUpdated: "Catatan berhasil diperbarui.",
+      toastNoteDeleted: "Catatan dihapus.",
+      toastStatusSubmitted: "Mantap! Logbook ditandai Sudah Dikirim.",
+      toastStatusPending: "Status logbook dikembalikan ke Belum Dikirim.",
+      toastSettingsSaved: "Pengaturan jadwal & reminder disimpan.",
+      toastCopied: "Draf logbook berhasil disalin ke clipboard!",
+      toastCopyFailed: "Gagal menyalin otomatis. Silakan blok teks dan salin manual.",
+      toastNotifGranted: "Izin notifikasi browser berhasil diaktifkan!",
+      toastNotifDenied: "Izin notifikasi ditolak browser. Aktifkan lewat pengaturan situs browser.",
+      toastNotifUnsupported: "Browser ini tidak mendukung Web Notification API.",
+      toastExportCsv: "File CSV riwayat logbook berhasil diunduh.",
+      toastExportJson: "File backup JSON berhasil diunduh.",
+      toastImportSuccess: "Data berhasil dipulihkan dari file backup!",
+      toastImportError: "Format file JSON tidak valid.",
+      notifTitle: "Pengingat Logbook MagangHub",
+      notifBody: "Jangan lupa salin draf aktivitas hari ini dan kirim logbook ke portal MagangHub!"
+    };
+
+    // Storage Key
+    const STORAGE_KEY = "maganghub_logbook_tracker_v1";
+
+    // Utility: Get local YYYY-MM-DD
+    function getTodayISO() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      return new Date(now.getTime() - offset).toISOString().split("T")[0];
+    }
+
+    function addDaysISO(isoDate, days) {
+      const d = new Date(isoDate + "T00:00:00");
+      d.setDate(d.getDate() + days);
+      const offset = d.getTimezoneOffset() * 60000;
+      return new Date(d.getTime() - offset).toISOString().split("T")[0];
+    }
+
+    function formatDateIndo(isoDate) {
+      if (!isoDate) return "-";
+      const date = new Date(isoDate + "T00:00:00");
+      return date.toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    // Default App State
+    function getDefaultState() {
+      const today = getTodayISO();
+      return {
+        settings: {
+          startDate: addDaysISO(today, -14),
+          endDate: addDaysISO(today, 136),
+          reminderTime: "16:30"
+        },
+        days: {
+          [today]: {
+            submitted: false,
+            notes: []
+          }
+        },
+        lastNotifiedDate: ""
+      };
+    }
+
+    let state = loadState();
+    let activeDate = getTodayISO();
+    let editingNoteId = null;
+    let bannerDismissedToday = false;
+    let deferredInstallPrompt = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return getDefaultState();
+        const parsed = JSON.parse(raw);
+        return {
+          ...getDefaultState(),
+          ...parsed,
+          settings: { ...getDefaultState().settings, ...(parsed.settings || {}) },
+          days: parsed.days || {}
+        };
+      } catch (e) {
+        return getDefaultState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function ensureDayEntry(dateStr) {
+      if (!state.days[dateStr]) {
+        state.days[dateStr] = { submitted: false, notes: [] };
+      }
+      return state.days[dateStr];
+    }
+
+    // Populate Static UI Text from UI_TEXT object
+    function initUIText() {
+      document.getElementById("ui-app-title").textContent = UI_TEXT.appTitle;
+      document.getElementById("ui-app-subtitle").textContent = UI_TEXT.appSubtitle;
+      document.getElementById("ui-btn-install").textContent = UI_TEXT.btnInstall;
+      document.getElementById("ui-ios-install-text").textContent = UI_TEXT.iosInstallHint;
+
+      document.getElementById("ui-reminder-banner-title").textContent = UI_TEXT.reminderBannerTitle;
+      document.getElementById("ui-reminder-banner-desc").textContent = UI_TEXT.reminderBannerDesc;
+      document.getElementById("btn-banner-jump").textContent = UI_TEXT.btnBannerJump;
+      document.getElementById("btn-banner-dismiss").textContent = UI_TEXT.btnBannerDismiss;
+
+      document.getElementById("ui-progress-title").textContent = UI_TEXT.progressTitle;
+      document.getElementById("btn-toggle-settings").textContent = UI_TEXT.btnToggleSettings;
+      document.getElementById("ui-stat-days-label").textContent = UI_TEXT.statDaysLabel;
+      document.getElementById("ui-stat-streak-label").textContent = UI_TEXT.statStreakLabel;
+      document.getElementById("ui-stat-streak-sub").textContent = UI_TEXT.statStreakSub;
+      document.getElementById("ui-stat-submitted-label").textContent = UI_TEXT.statSubmittedLabel;
+      document.getElementById("ui-stat-submitted-sub").textContent = UI_TEXT.statSubmittedSub;
+      document.getElementById("ui-progress-bar-label").textContent = UI_TEXT.progressBarLabel;
+
+      document.getElementById("ui-label-start-date").textContent = UI_TEXT.labelStartDate;
+      document.getElementById("ui-label-end-date").textContent = UI_TEXT.labelEndDate;
+      document.getElementById("ui-label-reminder-time").textContent = UI_TEXT.labelReminderTime;
+      document.getElementById("btn-save-settings").textContent = UI_TEXT.btnSaveSettings;
+      document.getElementById("btn-test-notif").textContent = UI_TEXT.btnTestNotif;
+      updateNotifButtonLabel();
+
+      document.getElementById("ui-notes-title").textContent = UI_TEXT.notesTitle;
+      document.getElementById("btn-today").textContent = UI_TEXT.btnToday;
+      document.getElementById("note-input").placeholder = UI_TEXT.notePlaceholder;
+      document.getElementById("opt-cat-kerja").textContent = UI_TEXT.catKerja;
+      document.getElementById("opt-cat-kendala").textContent = UI_TEXT.catKendala;
+      document.getElementById("opt-cat-belajar").textContent = UI_TEXT.catBelajar;
+      document.getElementById("btn-add-note").textContent = UI_TEXT.btnAddNote;
+
+      document.getElementById("ui-draft-title").textContent = UI_TEXT.draftTitle;
+      document.getElementById("opt-draft-structured").textContent = UI_TEXT.optDraftStructured;
+      document.getElementById("opt-draft-paragraph").textContent = UI_TEXT.optDraftParagraph;
+      document.getElementById("btn-copy-draft").textContent = UI_TEXT.btnCopyDraft;
+
+      document.getElementById("ui-history-title").textContent = UI_TEXT.historyTitle;
+      document.getElementById("history-search").placeholder = UI_TEXT.historySearchPlaceholder;
+      document.getElementById("opt-filter-all").textContent = UI_TEXT.optFilterAll;
+      document.getElementById("opt-filter-pending").textContent = UI_TEXT.optFilterPending;
+      document.getElementById("opt-filter-submitted").textContent = UI_TEXT.optFilterSubmitted;
+
+      document.getElementById("ui-backup-title").textContent = UI_TEXT.backupTitle;
+      document.getElementById("ui-backup-desc").textContent = UI_TEXT.backupDesc;
+      document.getElementById("btn-export-csv").textContent = UI_TEXT.btnExportCsv;
+      document.getElementById("btn-export-json").textContent = UI_TEXT.btnExportJson;
+      document.getElementById("btn-import-json").textContent = UI_TEXT.btnImportJson;
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3000);
+    }
+
+    // Calculate Progress Stats
+    function renderProgressStats() {
+      const today = getTodayISO();
+      const start = new Date(state.settings.startDate + "T00:00:00");
+      const end = new Date(state.settings.endDate + "T00:00:00");
+      const now = new Date(today + "T00:00:00");
+
+      const totalMs = Math.max(86400000, end - start);
+      const totalDays = Math.round(totalMs / 86400000) + 1;
+
+      let elapsedDays = 0;
+      if (now >= start) {
+        elapsedDays = Math.min(totalDays, Math.round((now - start) / 86400000) + 1);
+      }
+
+      const percent = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDays) * 100)));
+
+      // Total submitted count
+      const submittedDates = Object.keys(state.days).filter((d) => state.days[d] && state.days[d].submitted);
+      const totalSubmitted = submittedDates.length;
+
+      // Calculate Streak (consecutive submitted days ending today or yesterday)
+      let streak = 0;
+      let cursor = today;
+      if (!state.days[cursor] || !state.days[cursor].submitted) {
+        cursor = addDaysISO(today, -1);
+      }
+      while (state.days[cursor] && state.days[cursor].submitted) {
+        streak++;
+        cursor = addDaysISO(cursor, -1);
+      }
+
+      document.getElementById("stat-days-value").textContent = `${elapsedDays} / ${totalDays} Hari`;
+      document.getElementById("stat-days-sub").textContent = `${formatDateIndo(state.settings.startDate).split(", ")[1] || state.settings.startDate} – ${formatDateIndo(state.settings.endDate).split(", ")[1] || state.settings.endDate}`;
+      document.getElementById("stat-streak-value").textContent = `${streak} Hari`;
+      document.getElementById("stat-submitted-value").textContent = `${totalSubmitted} Logbook`;
+      document.getElementById("progress-percent-text").textContent = `${percent}%`;
+      document.getElementById("progress-fill").style.width = `${percent}%`;
+      document.getElementById("progress-bar-role").setAttribute("aria-valuenow", String(percent));
+    }
+
+    // Render Active Date Notes & Status
+    function renderActiveDay() {
+      const dayData = ensureDayEntry(activeDate);
+      document.getElementById("active-date-picker").value = activeDate;
+      document.getElementById("active-date-readable").textContent = formatDateIndo(activeDate);
+
+      const statusBar = document.getElementById("day-status-bar");
+      const statusBadge = document.getElementById("day-status-badge");
+      const toggleBtn = document.getElementById("btn-toggle-status");
+
+      if (dayData.submitted) {
+        statusBar.classList.remove("pending");
+        statusBar.classList.add("submitted");
+        statusBadge.classList.remove("badge-pending");
+        statusBadge.classList.add("badge-submitted");
+        statusBadge.textContent = UI_TEXT.statusSubmitted;
+        toggleBtn.className = "btn-outline";
+        toggleBtn.textContent = UI_TEXT.btnMarkPending;
+      } else {
+        statusBar.classList.remove("submitted");
+        statusBar.classList.add("pending");
+        statusBadge.classList.remove("badge-submitted");
+        statusBadge.classList.add("badge-pending");
+        statusBadge.textContent = UI_TEXT.statusPending;
+        toggleBtn.className = "btn-success";
+        toggleBtn.textContent = UI_TEXT.btnMarkSubmitted;
+      }
+
+      const listEl = document.getElementById("notes-list");
+      listEl.innerHTML = "";
+
+      if (!dayData.notes || dayData.notes.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = UI_TEXT.emptyNotes;
+        listEl.appendChild(empty);
+      } else {
+        dayData.notes.forEach((note) => {
+          const item = document.createElement("div");
+          item.className = "note-item";
+
+          const catMap = {
+            kerja: { label: UI_TEXT.catKerja, cls: "cat-kerja" },
+            kendala: { label: UI_TEXT.catKendala, cls: "cat-kendala" },
+            belajar: { label: UI_TEXT.catBelajar, cls: "cat-belajar" }
+          };
+          const catInfo = catMap[note.category] || catMap.kerja;
+
+          if (editingNoteId === note.id) {
+            item.innerHTML = `
+              <div class="note-body" style="display:flex; flex-direction:column; gap:8px;">
+                <select class="input-control" id="edit-cat-${note.id}">
+                  <option value="kerja" ${note.category === "kerja" ? "selected" : ""}>${UI_TEXT.catKerja}</option>
+                  <option value="kendala" ${note.category === "kendala" ? "selected" : ""}>${UI_TEXT.catKendala}</option>
+                  <option value="belajar" ${note.category === "belajar" ? "selected" : ""}>${UI_TEXT.catBelajar}</option>
+                </select>
+                <textarea class="input-control" id="edit-text-${note.id}">${escapeHtml(note.text)}</textarea>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <button type="button" class="btn-primary" data-action="save-edit" data-id="${note.id}">${UI_TEXT.btnSaveEdit}</button>
+                  <button type="button" class="btn-outline" data-action="cancel-edit">${UI_TEXT.btnCancelEdit}</button>
+                </div>
+              </div>
+            `;
+          } else {
+            item.innerHTML = `
+              <div class="note-body">
+                <div class="note-meta">
+                  <span class="cat-tag ${catInfo.cls}">${catInfo.label}</span>
+                  <span class="note-time">${escapeHtml(note.time || "")}</span>
+                </div>
+                <p class="note-text">${escapeHtml(note.text)}</p>
+              </div>
+              <div class="note-actions">
+                <button type="button" class="btn-ghost" data-action="edit" data-id="${note.id}">${UI_TEXT.btnEdit}</button>
+                <button type="button" class="btn-danger-ghost" data-action="delete" data-id="${note.id}">${UI_TEXT.btnDelete}</button>
+              </div>
+            `;
+          }
+
+          listEl.appendChild(item);
+        });
+      }
+
+      renderDraftGenerator();
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Generate Automatic Logbook Draft
+    function generateDraftText(dateStr, format) {
+      const dayData = state.days[dateStr];
+      if (!dayData || !dayData.notes || dayData.notes.length === 0) {
+        return "";
+      }
+
+      const kerja = dayData.notes.filter((n) => n.category === "kerja").map((n) => n.text.trim());
+      const kendala = dayData.notes.filter((n) => n.category === "kendala").map((n) => n.text.trim());
+      const belajar = dayData.notes.filter((n) => n.category === "belajar").map((n) => n.text.trim());
+
+      if (format === "paragraph") {
+        const parts = [];
+        if (kerja.length) parts.push(`Pada ${formatDateIndo(dateStr)}, aktivitas kerja yang dilaksanakan meliputi: ${kerja.join("; ")}.`);
+        if (kendala.length) parts.push(`Kendala yang dihadapi beserta penanganannya: ${kendala.join("; ")}.`);
+        if (belajar.length) parts.push(`Pembelajaran dan insight yang diperoleh: ${belajar.join("; ")}.`);
+        return parts.join(" ");
+      }
+
+      // Structured format
+      const lines = [`Logbook Harian — ${formatDateIndo(dateStr)}`, ""];
+      if (kerja.length) {
+        lines.push(`${UI_TEXT.catKerja}:`);
+        kerja.forEach((item) => lines.push(`- ${item}`));
+        lines.push("");
+      }
+      if (kendala.length) {
+        lines.push(`${UI_TEXT.catKendala}:`);
+        kendala.forEach((item) => lines.push(`- ${item}`));
+        lines.push("");
+      }
+      if (belajar.length) {
+        lines.push(`${UI_TEXT.catBelajar}:`);
+        belajar.forEach((item) => lines.push(`- ${item}`));
+        lines.push("");
+      }
+      return lines.join("
+").trim();
+    }
+
+    function renderDraftGenerator() {
+      const format = document.getElementById("draft-format").value;
+      const draft = generateDraftText(activeDate, format);
+      const outputEl = document.getElementById("draft-output");
+      outputEl.textContent = draft || UI_TEXT.emptyDraft;
+    }
+
+    // Render History List
+    function renderHistory() {
+      const search = document.getElementById("history-search").value.toLowerCase().trim();
+      const filter = document.getElementById("history-filter").value;
+      const historyEl = document.getElementById("history-list");
+      historyEl.innerHTML = "";
+
+      const dates = Object.keys(state.days)
+        .filter((d) => {
+          const entry = state.days[d];
+          if (!entry) return false;
+          // Show dates that either have notes, are submitted, or equal activeDate
+          if (entry.notes.length === 0 && !entry.submitted && d !== getTodayISO()) return false;
+          if (filter === "submitted" && !entry.submitted) return false;
+          if (filter === "pending" && entry.submitted) return false;
+          if (search) {
+            const matchDate = formatDateIndo(d).toLowerCase().includes(search) || d.includes(search);
+            const matchNotes = entry.notes.some((n) => n.text.toLowerCase().includes(search));
+            return matchDate || matchNotes;
+          }
+          return true;
+        })
+        .sort((a, b) => b.localeCompare(a));
+
+      if (dates.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = UI_TEXT.emptyHistory;
+        historyEl.appendChild(empty);
+        return;
+      }
+
+      dates.forEach((dateStr) => {
+        const entry = state.days[dateStr];
+        const card = document.createElement("div");
+        card.className = `history-card ${dateStr === activeDate ? "active-date" : ""}`;
+
+        const previewText = entry.notes.length
+          ? entry.notes.map((n) => `• ${n.text}`).join("  ")
+          : UI_TEXT.emptyNotes;
+
+        card.innerHTML = `
+          <div class="history-info">
+            <div class="history-date-row">
+              <span class="history-date">${escapeHtml(formatDateIndo(dateStr))}</span>
+              <span class="badge-status ${entry.submitted ? "badge-submitted" : "badge-pending"}">
+                ${entry.submitted ? UI_TEXT.statusSubmitted : UI_TEXT.statusPending}
+              </span>
+              <span style="font-size:0.78rem; color:var(--text-muted);">(${entry.notes.length} ${UI_TEXT.notesCountSuffix})</span>
+            </div>
+            <p class="history-preview">${escapeHtml(previewText)}</p>
+          </div>
+          <div class="history-actions">
+            <button type="button" class="btn-outline" data-history-open="${dateStr}">${UI_TEXT.btnOpenDate}</button>
+            <button type="button" class="${entry.submitted ? "btn-ghost" : "btn-success"}" data-history-toggle="${dateStr}">
+              ${entry.submitted ? UI_TEXT.btnMarkPending : UI_TEXT.btnMarkSubmitted}
+            </button>
+          </div>
+        `;
+        historyEl.appendChild(card);
+      });
+    }
+
+    // Reminder Logic & Web Notification API
+    function updateNotifButtonLabel() {
+      const btn = document.getElementById("btn-request-notif");
+      if ("Notification" in window && Notification.permission === "granted") {
+        btn.textContent = UI_TEXT.btnNotifGranted;
+      } else {
+        btn.textContent = UI_TEXT.btnRequestNotif;
+      }
+    }
+
+    function triggerBrowserNotification() {
+      if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then((reg) => {
+          reg.showNotification(UI_TEXT.notifTitle, {
+            body: UI_TEXT.notifBody,
+            icon: "./icons/icon-192.png",
+            badge: "./icons/icon-192.png",
+            tag: "maganghub-daily-reminder"
+          });
+        });
+      } else {
+        new Notification(UI_TEXT.notifTitle, {
+          body: UI_TEXT.notifBody,
+          icon: "./icons/icon-192.png"
+        });
+      }
+    }
+
+    function checkDailyReminder() {
+      const today = getTodayISO();
+      const todayEntry = ensureDayEntry(today);
+      const banner = document.getElementById("reminder-banner");
+
+      if (todayEntry.submitted) {
+        banner.classList.remove("active");
+        return;
+      }
+
+      const [remHour, remMin] = (state.settings.reminderTime || "16:30").split(":").map(Number);
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const reminderMinutes = remHour * 60 + remMin;
+
+      if (currentMinutes >= reminderMinutes) {
+        if (!bannerDismissedToday) {
+          banner.classList.add("active");
+        }
+        if (state.lastNotifiedDate !== today) {
+          state.lastNotifiedDate = today;
+          saveState();
+          triggerBrowserNotification();
+        }
+      } else {
+        banner.classList.remove("active");
+      }
+    }
+
+    // Event Listeners
+    function bindEvents() {
+      // Toggle settings panel
+      document.getElementById("btn-toggle-settings").addEventListener("click", () => {
+        const panel = document.getElementById("settings-panel");
+        const isHidden = panel.style.display === "none";
+        panel.style.display = isHidden ? "flex" : "none";
+        document.getElementById("btn-toggle-settings").textContent = isHidden
+          ? UI_TEXT.btnHideSettings
+          : UI_TEXT.btnToggleSettings;
+
+        if (isHidden) {
+          document.getElementById("input-start-date").value = state.settings.startDate;
+          document.getElementById("input-end-date").value = state.settings.endDate;
+          document.getElementById("input-reminder-time").value = state.settings.reminderTime;
+        }
+      });
+
+      // Save settings
+      document.getElementById("btn-save-settings").addEventListener("click", () => {
+        const start = document.getElementById("input-start-date").value;
+        const end = document.getElementById("input-end-date").value;
+        const time = document.getElementById("input-reminder-time").value;
+
+        if (start) state.settings.startDate = start;
+        if (end) state.settings.endDate = end;
+        if (time) state.settings.reminderTime = time;
+
+        saveState();
+        renderProgressStats();
+        checkDailyReminder();
+        showToast(UI_TEXT.toastSettingsSaved);
+      });
+
+      // Request notification permission
+      document.getElementById("btn-request-notif").addEventListener("click", async () => {
+        if (!("Notification" in window)) {
+          showToast(UI_TEXT.toastNotifUnsupported);
+          return;
+        }
+        const perm = await Notification.requestPermission();
+        updateNotifButtonLabel();
+        if (perm === "granted") {
+          showToast(UI_TEXT.toastNotifGranted);
+        } else {
+          showToast(UI_TEXT.toastNotifDenied);
+        }
+      });
+
+      // Test notification
+      document.getElementById("btn-test-notif").addEventListener("click", async () => {
+        if (!("Notification" in window)) {
+          showToast(UI_TEXT.toastNotifUnsupported);
+          return;
+        }
+        if (Notification.permission !== "granted") {
+          const perm = await Notification.requestPermission();
+          updateNotifButtonLabel();
+          if (perm !== "granted") {
+            showToast(UI_TEXT.toastNotifDenied);
+            return;
+          }
+        }
+        triggerBrowserNotification();
+      });
+
+      // Reminder Banner buttons
+      document.getElementById("btn-banner-jump").addEventListener("click", () => {
+        activeDate = getTodayISO();
+        editingNoteId = null;
+        renderAll();
+        document.getElementById("draft-section").scrollIntoView({ behavior: "smooth" });
+      });
+
+      document.getElementById("btn-banner-dismiss").addEventListener("click", () => {
+        bannerDismissedToday = true;
+        document.getElementById("reminder-banner").classList.remove("active");
+      });
+
+      // Date Picker & Today shortcut
+      document.getElementById("active-date-picker").addEventListener("change", (e) => {
+        if (e.target.value) {
+          activeDate = e.target.value;
+          editingNoteId = null;
+          renderAll();
+        }
+      });
+
+      document.getElementById("btn-today").addEventListener("click", () => {
+        activeDate = getTodayISO();
+        editingNoteId = null;
+        renderAll();
+      });
+
+      // Toggle Logbook Submitted Status
+      document.getElementById("btn-toggle-status").addEventListener("click", () => {
+        const dayData = ensureDayEntry(activeDate);
+        dayData.submitted = !dayData.submitted;
+        saveState();
+        renderAll();
+        checkDailyReminder();
+        showToast(dayData.submitted ? UI_TEXT.toastStatusSubmitted : UI_TEXT.toastStatusPending);
+      });
+
+      // Add Quick Note
+      document.getElementById("quick-note-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const input = document.getElementById("note-input");
+        const category = document.getElementById("note-category").value;
+        const text = input.value.trim();
+        if (!text) return;
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+
+        const dayData = ensureDayEntry(activeDate);
+        dayData.notes.push({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          text,
+          category,
+          time: timeStr
+        });
+
+        input.value = "";
+        saveState();
+        renderAll();
+        showToast(UI_TEXT.toastNoteAdded);
+      });
+
+      // Edit / Delete Note Delegation
+      document.getElementById("notes-list").addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+        const dayData = ensureDayEntry(activeDate);
+
+        if (action === "edit") {
+          editingNoteId = id;
+          renderActiveDay();
+        } else if (action === "cancel-edit") {
+          editingNoteId = null;
+          renderActiveDay();
+        } else if (action === "save-edit") {
+          const newText = document.getElementById(`edit-text-${id}`).value.trim();
+          const newCat = document.getElementById(`edit-cat-${id}`).value;
+          if (!newText) return;
+          const target = dayData.notes.find((n) => n.id === id);
+          if (target) {
+            target.text = newText;
+            target.category = newCat;
+            saveState();
+            showToast(UI_TEXT.toastNoteUpdated);
+          }
+          editingNoteId = null;
+          renderAll();
+        } else if (action === "delete") {
+          if (confirm(UI_TEXT.confirmDeleteNote)) {
+            dayData.notes = dayData.notes.filter((n) => n.id !== id);
+            saveState();
+            renderAll();
+            showToast(UI_TEXT.toastNoteDeleted);
+          }
+        }
+      });
+
+      // Draft format switch & One-Click Copy
+      document.getElementById("draft-format").addEventListener("change", renderDraftGenerator);
+
+      document.getElementById("btn-copy-draft").addEventListener("click", async () => {
+        const format = document.getElementById("draft-format").value;
+        const draftText = generateDraftText(activeDate, format);
+        if (!draftText) return;
+
+        const copyBtn = document.getElementById("btn-copy-draft");
+        try {
+          await navigator.clipboard.writeText(draftText);
+          copyBtn.textContent = UI_TEXT.btnCopiedDraft;
+          copyBtn.classList.replace("btn-primary", "btn-success");
+          showToast(UI_TEXT.toastCopied);
+          setTimeout(() => {
+            copyBtn.textContent = UI_TEXT.btnCopyDraft;
+            copyBtn.classList.replace("btn-success", "btn-primary");
+          }, 2200);
+        } catch (err) {
+          // Fallback copy
+          const ta = document.createElement("textarea");
+          ta.value = draftText;
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand("copy");
+            showToast(UI_TEXT.toastCopied);
+          } catch (e2) {
+            showToast(UI_TEXT.toastCopyFailed);
+          }
+          document.body.removeChild(ta);
+        }
+      });
+
+      // History search, filter & actions
+      document.getElementById("history-search").addEventListener("input", renderHistory);
+      document.getElementById("history-filter").addEventListener("change", renderHistory);
+
+      document.getElementById("history-list").addEventListener("click", (e) => {
+        const openBtn = e.target.closest("[data-history-open]");
+        if (openBtn) {
+          activeDate = openBtn.dataset.historyOpen;
+          editingNoteId = null;
+          renderAll();
+          document.getElementById("quick-note-section").scrollIntoView({ behavior: "smooth" });
+          return;
+        }
+
+        const toggleBtn = e.target.closest("[data-history-toggle]");
+        if (toggleBtn) {
+          const targetDate = toggleBtn.dataset.historyToggle;
+          const entry = ensureDayEntry(targetDate);
+          entry.submitted = !entry.submitted;
+          saveState();
+          renderAll();
+          checkDailyReminder();
+          showToast(entry.submitted ? UI_TEXT.toastStatusSubmitted : UI_TEXT.toastStatusPending);
+        }
+      });
+
+      // Export CSV
+      document.getElementById("btn-export-csv").addEventListener("click", () => {
+        const rows = [["Tanggal", "Status Logbook", "Waktu Catat", "Kategori", "Isi Catatan"]];
+        const sortedDates = Object.keys(state.days).sort();
+        sortedDates.forEach((d) => {
+          const entry = state.days[d];
+          const statusLabel = entry.submitted ? "Sudah Dikirim" : "Belum Dikirim";
+          if (!entry.notes || entry.notes.length === 0) {
+            if (entry.submitted) {
+              rows.push([d, statusLabel, "-", "-", "-"]);
+            }
+          } else {
+            entry.notes.forEach((n) => {
+              const catLabel = n.category === "kendala" ? UI_TEXT.catKendala : n.category === "belajar" ? UI_TEXT.catBelajar : UI_TEXT.catKerja;
+              rows.push([d, statusLabel, n.time || "-", catLabel, n.text]);
+            });
+          }
+        });
+
+        const csvContent = rows
+          .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+          .join("
+");
+
+        downloadFile("﻿" + csvContent, `logbook-maganghub-${getTodayISO()}.csv`, "text/csv;charset=utf-8;");
+        showToast(UI_TEXT.toastExportCsv);
+      });
+
+      // Export JSON
+      document.getElementById("btn-export-json").addEventListener("click", () => {
+        const jsonStr = JSON.stringify(state, null, 2);
+        downloadFile(jsonStr, `backup-logbook-maganghub-${getTodayISO()}.json`, "application/json");
+        showToast(UI_TEXT.toastExportJson);
+      });
+
+      // Import JSON
+      document.getElementById("btn-import-json").addEventListener("click", () => {
+        document.getElementById("import-file-input").click();
+      });
+
+      document.getElementById("import-file-input").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const imported = JSON.parse(ev.target.result);
+            if (!imported || typeof imported.days !== "object") {
+              throw new Error("Invalid schema");
+            }
+            state = {
+              ...getDefaultState(),
+              ...imported,
+              settings: { ...getDefaultState().settings, ...(imported.settings || {}) }
+            };
+            saveState();
+            renderAll();
+            checkDailyReminder();
+            showToast(UI_TEXT.toastImportSuccess);
+          } catch (err) {
+            showToast(UI_TEXT.toastImportError);
+          }
+          e.target.value = "";
+        };
+        reader.readAsText(file);
+      });
+
+      // PWA Install Prompt
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        document.getElementById("btn-install-pwa").style.display = "inline-flex";
+      });
+
+      document.getElementById("btn-install-pwa").addEventListener("click", async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === "accepted") {
+          document.getElementById("btn-install-pwa").style.display = "none";
+        }
+        deferredInstallPrompt = null;
+      });
+
+      // iOS Safari Install Hint
+      const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+      if (isIos && !isStandalone && !localStorage.getItem("ios_hint_dismissed")) {
+        document.getElementById("ios-install-hint").classList.add("show");
+      }
+
+      document.getElementById("btn-close-ios-hint").addEventListener("click", () => {
+        document.getElementById("ios-install-hint").classList.remove("show");
+        localStorage.setItem("ios_hint_dismissed", "1");
+      });
+
+      // Online / Offline Status Pill
+      function updateOnlineStatus() {
+        const pill = document.getElementById("network-status-pill");
+        const label = document.getElementById("ui-network-status");
+        if (navigator.onLine) {
+          pill.classList.remove("offline");
+          label.textContent = UI_TEXT.networkOnline;
+        } else {
+          pill.classList.add("offline");
+          label.textContent = UI_TEXT.networkOffline;
+        }
+      }
+      window.addEventListener("online", updateOnlineStatus);
+      window.addEventListener("offline", updateOnlineStatus);
+      updateOnlineStatus();
+    }
+
+    function downloadFile(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function renderAll() {
+      renderProgressStats();
+      renderActiveDay();
+      renderHistory();
+    }
+
+    // Register Service Worker for PWA Offline & Installability
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch((err) => {
+          console.warn("Service Worker registration skipped:", err);
+        });
+      });
+    }
+
+    // Initialize App
+    initUIText();
+    bindEvents();
+    renderAll();
+    checkDailyReminder();
+    setInterval(checkDailyReminder, 30000);
+  </script>
+</body>
+</html>
