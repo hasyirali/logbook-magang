@@ -783,15 +783,15 @@
           </svg>
         </div>
         <div>
-          <h1 class="brand-title" id="ui-app-title"></h1>
-          <p class="brand-subtitle" id="ui-app-subtitle"></p>
+          <h1 class="brand-title" id="ui-app-title">LogbookTracker MagangHub</h1>
+          <p class="brand-subtitle" id="ui-app-subtitle">Catat cepat, susun draf otomatis, pantau progress magang</p>
         </div>
       </div>
 
       <div class="header-actions">
         <span class="status-pill" id="network-status-pill">
           <span class="dot"></span>
-          <span id="ui-network-status"></span>
+          <span id="ui-network-status">Siap Offline (PWA)</span>
         </span>
         <button type="button" class="btn-primary" id="btn-install-pwa" style="display: none;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -799,7 +799,7 @@
             <polyline points="7 10 12 15 17 10"></polyline>
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
-          <span id="ui-btn-install"></span>
+          <span id="ui-btn-install">Install Aplikasi</span>
         </button>
       </div>
     </div>
@@ -1086,10 +1086,8 @@
       notifBody: "Jangan lupa salin draf aktivitas hari ini dan kirim logbook ke portal MagangHub!"
     };
 
-    // Storage Key
     const STORAGE_KEY = "maganghub_logbook_tracker_v1";
 
-    // Utility: Get local YYYY-MM-DD
     function getTodayISO() {
       const now = new Date();
       const offset = now.getTimezoneOffset() * 60000;
@@ -1114,7 +1112,6 @@
       });
     }
 
-    // Default App State
     function getDefaultState() {
       const today = getTodayISO();
       return {
@@ -1166,7 +1163,6 @@
       return state.days[dateStr];
     }
 
-    // Populate Static UI Text from UI_TEXT object
     function initUIText() {
       document.getElementById("ui-app-title").textContent = UI_TEXT.appTitle;
       document.getElementById("ui-app-subtitle").textContent = UI_TEXT.appSubtitle;
@@ -1230,7 +1226,6 @@
       }, 3000);
     }
 
-    // Calculate Progress Stats
     function renderProgressStats() {
       const today = getTodayISO();
       const start = new Date(state.settings.startDate + "T00:00:00");
@@ -1247,11 +1242,9 @@
 
       const percent = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDays) * 100)));
 
-      // Total submitted count
       const submittedDates = Object.keys(state.days).filter((d) => state.days[d] && state.days[d].submitted);
       const totalSubmitted = submittedDates.length;
 
-      // Calculate Streak (consecutive submitted days ending today or yesterday)
       let streak = 0;
       let cursor = today;
       if (!state.days[cursor] || !state.days[cursor].submitted) {
@@ -1271,7 +1264,6 @@
       document.getElementById("progress-bar-role").setAttribute("aria-valuenow", String(percent));
     }
 
-    // Render Active Date Notes & Status
     function renderActiveDay() {
       const dayData = ensureDayEntry(activeDate);
       document.getElementById("active-date-picker").value = activeDate;
@@ -1363,7 +1355,6 @@
       return div.innerHTML;
     }
 
-    // Generate Automatic Logbook Draft
     function generateDraftText(dateStr, format) {
       const dayData = state.days[dateStr];
       if (!dayData || !dayData.notes || dayData.notes.length === 0) {
@@ -1382,7 +1373,6 @@
         return parts.join(" ");
       }
 
-      // Structured format
       const lines = [`Logbook Harian — ${formatDateIndo(dateStr)}`, ""];
       if (kerja.length) {
         lines.push(`${UI_TEXT.catKerja}:`);
@@ -1399,8 +1389,7 @@
         belajar.forEach((item) => lines.push(`- ${item}`));
         lines.push("");
       }
-      return lines.join("
-").trim();
+      return lines.join("\n").trim();
     }
 
     function renderDraftGenerator() {
@@ -1410,7 +1399,6 @@
       outputEl.textContent = draft || UI_TEXT.emptyDraft;
     }
 
-    // Render History List
     function renderHistory() {
       const search = document.getElementById("history-search").value.toLowerCase().trim();
       const filter = document.getElementById("history-filter").value;
@@ -1421,7 +1409,6 @@
         .filter((d) => {
           const entry = state.days[d];
           if (!entry) return false;
-          // Show dates that either have notes, are submitted, or equal activeDate
           if (entry.notes.length === 0 && !entry.submitted && d !== getTodayISO()) return false;
           if (filter === "submitted" && !entry.submitted) return false;
           if (filter === "pending" && entry.submitted) return false;
@@ -1473,7 +1460,6 @@
       });
     }
 
-    // Reminder Logic & Web Notification API
     function updateNotifButtonLabel() {
       const btn = document.getElementById("btn-request-notif");
       if ("Notification" in window && Notification.permission === "granted") {
@@ -1532,9 +1518,7 @@
       }
     }
 
-    // Event Listeners
     function bindEvents() {
-      // Toggle settings panel
       document.getElementById("btn-toggle-settings").addEventListener("click", () => {
         const panel = document.getElementById("settings-panel");
         const isHidden = panel.style.display === "none";
@@ -1550,7 +1534,6 @@
         }
       });
 
-      // Save settings
       document.getElementById("btn-save-settings").addEventListener("click", () => {
         const start = document.getElementById("input-start-date").value;
         const end = document.getElementById("input-end-date").value;
@@ -1566,7 +1549,6 @@
         showToast(UI_TEXT.toastSettingsSaved);
       });
 
-      // Request notification permission
       document.getElementById("btn-request-notif").addEventListener("click", async () => {
         if (!("Notification" in window)) {
           showToast(UI_TEXT.toastNotifUnsupported);
@@ -1581,7 +1563,6 @@
         }
       });
 
-      // Test notification
       document.getElementById("btn-test-notif").addEventListener("click", async () => {
         if (!("Notification" in window)) {
           showToast(UI_TEXT.toastNotifUnsupported);
@@ -1598,7 +1579,6 @@
         triggerBrowserNotification();
       });
 
-      // Reminder Banner buttons
       document.getElementById("btn-banner-jump").addEventListener("click", () => {
         activeDate = getTodayISO();
         editingNoteId = null;
@@ -1611,7 +1591,6 @@
         document.getElementById("reminder-banner").classList.remove("active");
       });
 
-      // Date Picker & Today shortcut
       document.getElementById("active-date-picker").addEventListener("change", (e) => {
         if (e.target.value) {
           activeDate = e.target.value;
@@ -1626,7 +1605,6 @@
         renderAll();
       });
 
-      // Toggle Logbook Submitted Status
       document.getElementById("btn-toggle-status").addEventListener("click", () => {
         const dayData = ensureDayEntry(activeDate);
         dayData.submitted = !dayData.submitted;
@@ -1636,7 +1614,6 @@
         showToast(dayData.submitted ? UI_TEXT.toastStatusSubmitted : UI_TEXT.toastStatusPending);
       });
 
-      // Add Quick Note
       document.getElementById("quick-note-form").addEventListener("submit", (e) => {
         e.preventDefault();
         const input = document.getElementById("note-input");
@@ -1661,7 +1638,6 @@
         showToast(UI_TEXT.toastNoteAdded);
       });
 
-      // Edit / Delete Note Delegation
       document.getElementById("notes-list").addEventListener("click", (e) => {
         const btn = e.target.closest("button");
         if (!btn) return;
@@ -1698,7 +1674,6 @@
         }
       });
 
-      // Draft format switch & One-Click Copy
       document.getElementById("draft-format").addEventListener("change", renderDraftGenerator);
 
       document.getElementById("btn-copy-draft").addEventListener("click", async () => {
@@ -1717,7 +1692,6 @@
             copyBtn.classList.replace("btn-success", "btn-primary");
           }, 2200);
         } catch (err) {
-          // Fallback copy
           const ta = document.createElement("textarea");
           ta.value = draftText;
           document.body.appendChild(ta);
@@ -1732,7 +1706,6 @@
         }
       });
 
-      // History search, filter & actions
       document.getElementById("history-search").addEventListener("input", renderHistory);
       document.getElementById("history-filter").addEventListener("change", renderHistory);
 
@@ -1758,7 +1731,6 @@
         }
       });
 
-      // Export CSV
       document.getElementById("btn-export-csv").addEventListener("click", () => {
         const rows = [["Tanggal", "Status Logbook", "Waktu Catat", "Kategori", "Isi Catatan"]];
         const sortedDates = Object.keys(state.days).sort();
@@ -1779,21 +1751,18 @@
 
         const csvContent = rows
           .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
-          .join("
-");
+          .join("\n");
 
-        downloadFile("﻿" + csvContent, `logbook-maganghub-${getTodayISO()}.csv`, "text/csv;charset=utf-8;");
+        downloadFile("\uFEFF" + csvContent, `logbook-maganghub-${getTodayISO()}.csv`, "text/csv;charset=utf-8;");
         showToast(UI_TEXT.toastExportCsv);
       });
 
-      // Export JSON
       document.getElementById("btn-export-json").addEventListener("click", () => {
         const jsonStr = JSON.stringify(state, null, 2);
         downloadFile(jsonStr, `backup-logbook-maganghub-${getTodayISO()}.json`, "application/json");
         showToast(UI_TEXT.toastExportJson);
       });
 
-      // Import JSON
       document.getElementById("btn-import-json").addEventListener("click", () => {
         document.getElementById("import-file-input").click();
       });
@@ -1825,7 +1794,6 @@
         reader.readAsText(file);
       });
 
-      // PWA Install Prompt
       window.addEventListener("beforeinstallprompt", (e) => {
         e.preventDefault();
         deferredInstallPrompt = e;
@@ -1842,7 +1810,6 @@
         deferredInstallPrompt = null;
       });
 
-      // iOS Safari Install Hint
       const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
       const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
       if (isIos && !isStandalone && !localStorage.getItem("ios_hint_dismissed")) {
@@ -1854,7 +1821,6 @@
         localStorage.setItem("ios_hint_dismissed", "1");
       });
 
-      // Online / Offline Status Pill
       function updateOnlineStatus() {
         const pill = document.getElementById("network-status-pill");
         const label = document.getElementById("ui-network-status");
@@ -1889,7 +1855,6 @@
       renderHistory();
     }
 
-    // Register Service Worker for PWA Offline & Installability
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch((err) => {
@@ -1898,7 +1863,6 @@
       });
     }
 
-    // Initialize App
     initUIText();
     bindEvents();
     renderAll();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'logbook-maganghub-v1';
+const CACHE_NAME = 'logbook-maganghub-v2';
 const FONT_CACHE_NAME = 'logbook-maganghub-fonts-v1';
 
 const PRECACHE_ASSETS = [
@@ -38,7 +38,6 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // Cache Google Fonts (Stale-While-Revalidate)
   if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
     event.respondWith(
       caches.open(FONT_CACHE_NAME).then((cache) =>
@@ -58,10 +57,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Only handle same-origin requests
   if (url.origin !== self.location.origin) return;
 
-  // Navigation requests: Network-first with cache & offline fallback
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -77,7 +74,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets: Cache-first with network fallback
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
@@ -92,7 +88,6 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Handle click on browser notification
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
